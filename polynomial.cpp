@@ -58,7 +58,7 @@ TPolynomial& TPolynomial::operator=(const TPolynomial &operand) {
 }
 
 size_t TPolynomial::size() const {
-    return polynomial.size();
+    return polynomial.size() + isNegative;
 }
 
 std::istream& operator>>(std::istream &in, TPolynomial &obj) {
@@ -105,7 +105,7 @@ std::ostream& operator<<(std::ostream &out, TPolynomial &obj) {
             out << '+' << obj.polynomial[i];
         }
     } else {
-        out << (obj.isNegative ? 1 : 0); 
+        out << (obj.isNegative ? 1 : 0);
     }
     if (obj.isNegative) {
         out << "+1";
