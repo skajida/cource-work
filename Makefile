@@ -4,10 +4,16 @@ CPPFLAGS+=-O2 -Wall -Werror -Wformat-security -Wignored-qualifiers -Winit-self -
 
 all: main
 
-main: main.o
+main: main.o elementary_conjuction.o polynomial.o
 	g++ $(CPPFLAGS) $^ -o $@
 
 main.o: main.cpp
+	g++ $(CPPFLAGS) -c $< -o $@
+
+elementary_conjuction.o: elementary_conjuction.cpp
+	g++ $(CPPFLAGS) -c $< -o $@
+
+polynomial.o: polynomial.cpp
 	g++ $(CPPFLAGS) -c $< -o $@
 
 clear:
