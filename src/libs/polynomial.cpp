@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "headers/polynomial.h"
+#include "polynomial.h"
 
 void TPolynomial::clear() {
     isNegative = false;

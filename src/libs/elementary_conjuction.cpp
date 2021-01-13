@@ -1,4 +1,4 @@
-#include "headers/elementary_conjuction.h"
+#include "elementary_conjuction.h"
 
 enum {
     DIVIDER = 16,

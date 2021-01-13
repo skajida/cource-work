@@ -1,8 +1,8 @@
 #include <fstream>
 #include <random>
 #include <ctime>
-#include "headers/elementary_conjuction.h"
-#include "headers/polynomial.h"
+#include <libs/elementary_conjuction.h>
+#include <libs/polynomial.h>
 
 void process(std::istream &in, std::ostream &out) {
     static std::mt19937 gen(time(0));
