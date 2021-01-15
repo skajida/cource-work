@@ -69,7 +69,9 @@ bool TElementaryConjuction::operator==(const TElementaryConjuction &operand) con
 }
 
 bool TElementaryConjuction::isInversed(const TElementaryConjuction &operand) const {
-    if (isAlone && isAlone == operand.isAlone && (*this)[isAlone - 1] != operand[operand.isAlone - 1]) {
+    if (isAlone && isAlone == operand.isAlone
+        && (*this)[isAlone - 1] != operand[operand.isAlone - 1])
+    {
         return true;
     }
     return false;
