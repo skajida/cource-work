@@ -4,9 +4,8 @@ project(course-work)
 
 set(CMAKE_CXX_STANDART 20)
 
-include_directories(${CMAKE_SOURCE_DIR})
-
 add_definitions(-O2 -Wall)
+
 if (UNIX)
     add_definitions(-Werror -Wformat-security -Wignored-qualifiers -Winit-self -Wswitch-default
                     -Wfloat-equal -Wshadow -Wpointer-arith -Wtype-limits -Wempty-body -Wlogical-op
@@ -17,5 +16,7 @@ elseif (WIN32)
     # add_definitions()
 endif()
 
+include_directories(${CMAKE_SOURCE_DIR})
+
 add_subdirectory(bin)
-add_subdirectory(libs)
+add_subdirectory(implementation)

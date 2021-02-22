@@ -1,27 +1,25 @@
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 
-#include "polynomial.h"
+#include <headers/polynomial.h>
 
 void TPolynomial::clear() {
     isNegative = false;
     polynomial.clear();
 }
 
-void TPolynomial::deleteSimilar() {
+void TPolynomial::deleteSimilar() const {
     std::sort(polynomial.begin(), polynomial.end());
     std::vector<size_t> excesses;
-    for (size_t i = 0; i < polynomial.size(); ++i) {
-        if (i + 1 == polynomial.size()) {
-            break;
-        }
-        if (polynomial[i] == polynomial[i + 1]) {
-            excesses.push_back(i++);
+    for (size_t i = 1; i < polynomial.size(); ++i) {
+        if (polynomial[i - 1] == polynomial[i]) {
             excesses.push_back(i);
-        } else if (polynomial[i].isInversed(polynomial[i + 1])) {
+            excesses.push_back(++i);
+        } else if (polynomial[i - 1].isInversed(polynomial[i])) {
             isNegative = !isNegative;
-            excesses.push_back(i++);
             excesses.push_back(i);
+            excesses.push_back(++i);
         }
     }
     size_t quantity = 0;
@@ -32,7 +30,7 @@ void TPolynomial::deleteSimilar() {
             std::swap(polynomial[i], polynomial[i - quantity]);
         }
     }
-    polynomial.resize(polynomial.size() - quantity, TElementaryConjuction(dimension));
+    polynomial.erase(polynomial.end() - quantity, polynomial.end());
 }
 
 TPolynomial::TPolynomial(int32_t n) : dimension(n), isNegative(), polynomial() {
@@ -40,7 +38,11 @@ TPolynomial::TPolynomial(int32_t n) : dimension(n), isNegative(), polynomial() {
 }
 
 TPolynomial TPolynomial::operator+(const TPolynomial &operand) const {
+    if (dimension != operand.dimension) {
+        throw std::logic_error("dimensions of operands doesn't match");
+    }
     TPolynomial res(dimension);
+    res.polynomial.reserve(polynomial.size() + operand.polynomial.size());
     for (const TElementaryConjuction &it : polynomial) {
         res.polynomial.push_back(it);
     }
@@ -52,6 +54,9 @@ TPolynomial TPolynomial::operator+(const TPolynomial &operand) const {
 }
 
 TPolynomial& TPolynomial::operator=(const TPolynomial &operand) {
+    if (dimension != operand.dimension) {
+        throw std::logic_error("dimensions of operands doesn't match");
+    }
     isNegative = operand.isNegative;
     polynomial = operand.polynomial;
     return *this;
@@ -62,42 +67,38 @@ size_t TPolynomial::size() const {
 }
 
 std::istream& operator>>(std::istream &in, TPolynomial &obj) {
-    enum class EStates {
-        Conjuction,
-        End,
-        Error
-    };
     obj.clear();
-    EStates currentState = EStates::Conjuction;
-    while (currentState != EStates::End) {
-        TElementaryConjuction conj(obj.dimension);
-        switch (currentState) {
-        case EStates::Conjuction:
-            if (in >> conj) {
-                obj.polynomial.push_back(conj);
-                int32_t ch = in.peek();
-                while (ch != '\n' && ch != EOF && isspace(ch)) {
-                    in.get();
-                    ch = in.peek();
-                }
-                if (ch == '\n' || ch == EOF) {
-                    currentState = EStates::End;
-                } else if (!isspace(ch) && ch != '+') {
-                    currentState = EStates::Error;
-                }
-            } else {
-                currentState = EStates::End;
-            }
-            break;
-        default:
-            throw std::invalid_argument("Wrong input while reading polynomial");
+    std::streamoff pos_src = (in >> std::ws).tellg();
+    if (in.peek() == EOF) {
+        in.setstate(std::istream::failbit | std::istream::eofbit);
+        return in;
+    }
+    std::string line;
+    std::getline(in, line, '\n');
+    std::istringstream sin(line);
+    std::streamoff pos_cpy = sin.tellg();
+    TElementaryConjuction ec(obj.dimension);
+    char ch = 0;
+    do {
+        if (!(sin >> ec)) {
+            in.seekg(pos_src);
+            in.setstate(std::istream::failbit);
+            return in;
         }
-        in.get();
+        pos_src += sin.tellg() - pos_cpy;
+        pos_cpy = sin.tellg();
+        if (!ec.isZero()) {
+            obj.polynomial.push_back(ec);       // move
+        }
+    } while (!sin.rdstate() && sin >> ch && ch == '+');
+    if (ch != 0 && ch != '+') {
+        in.seekg(pos_src + sin.tellg() - pos_cpy);
+        in.setstate(std::istream::failbit);
     }
     return in;
 }
 
-std::ostream& operator<<(std::ostream &out, TPolynomial &obj) {
+std::ostream& operator<<(std::ostream &out, const TPolynomial &obj) {
     obj.deleteSimilar();
     if (obj.size()) {
         out << obj.polynomial[0];
@@ -107,6 +108,7 @@ std::ostream& operator<<(std::ostream &out, TPolynomial &obj) {
     } else {
         out << (obj.isNegative ? 1 : 0);
     }
+    // 1+1
     if (obj.isNegative) {
         out << "+1";
     }

@@ -1,19 +1,17 @@
-#include <vector>
-
-#include "elementary_conjuction.h"
-
 #pragma once
+
+#include <headers/elementary_conjuction.h>
 
 class TPolynomial {
 private:
     const int32_t dimension;
-    bool isNegative;
-    std::vector<TElementaryConjuction> polynomial;
+    mutable bool isNegative;
+    mutable std::vector<TElementaryConjuction> polynomial;
 
     void clear();
-    void deleteSimilar();
+    void deleteSimilar() const;
 public:
-    explicit TPolynomial(int32_t);
+    explicit TPolynomial(int32_t dim);
 
     TPolynomial operator+(const TPolynomial&) const;
     TPolynomial& operator=(const TPolynomial&);
@@ -21,5 +19,5 @@ public:
     size_t size() const;
 
     friend std::istream& operator>>(std::istream&, TPolynomial&);
-    friend std::ostream& operator<<(std::ostream&, TPolynomial&);
+    friend std::ostream& operator<<(std::ostream&, const TPolynomial&);
 };
