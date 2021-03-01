@@ -13,8 +13,9 @@ private:
 public:
     explicit TPolynomial(int32_t dim);
 
-    TPolynomial operator+(const TPolynomial&) const;
     TPolynomial& operator=(const TPolynomial&);
+    TPolynomial operator+(const TPolynomial&) const;
+    bool operator<(const TPolynomial&) const;
 
     size_t size() const;
 

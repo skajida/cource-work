@@ -37,6 +37,15 @@ TPolynomial::TPolynomial(int32_t n) : dimension(n), isNegative(), polynomial() {
     //
 }
 
+TPolynomial& TPolynomial::operator=(const TPolynomial &operand) {
+    if (dimension != operand.dimension) {
+        throw std::logic_error("dimensions of operands doesn't match");
+    }
+    isNegative = operand.isNegative;
+    polynomial = operand.polynomial;
+    return *this;
+}
+
 TPolynomial TPolynomial::operator+(const TPolynomial &operand) const {
     if (dimension != operand.dimension) {
         throw std::logic_error("dimensions of operands doesn't match");
@@ -53,13 +62,8 @@ TPolynomial TPolynomial::operator+(const TPolynomial &operand) const {
     return res;
 }
 
-TPolynomial& TPolynomial::operator=(const TPolynomial &operand) {
-    if (dimension != operand.dimension) {
-        throw std::logic_error("dimensions of operands doesn't match");
-    }
-    isNegative = operand.isNegative;
-    polynomial = operand.polynomial;
-    return *this;
+bool TPolynomial::operator<(const TPolynomial &operand) const {
+    return size() < operand.size();             // < +1
 }
 
 size_t TPolynomial::size() const {
@@ -88,7 +92,7 @@ std::istream& operator>>(std::istream &in, TPolynomial &obj) {
         pos_src += sin.tellg() - pos_cpy;
         pos_cpy = sin.tellg();
         if (!ec.isZero()) {
-            obj.polynomial.push_back(ec);       // move
+            obj.polynomial.push_back(std::move(ec));
         }
     } while (!sin.rdstate() && sin >> ch && ch == '+');
     if (ch != 0 && ch != '+') {
