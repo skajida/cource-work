@@ -1,0 +1,272 @@
+\documentclass[a4paper,12pt,titlepage,finall]{article}
+
+\usepackage[T1,T2A]{fontenc}     % форматы шрифтов
+\usepackage[utf8x]{inputenc}     % кодировка символов, используемая в данном файле
+\usepackage[russian]{babel}      % пакет русификации
+\usepackage{cmap}
+
+\usepackage{geometry}		     % для настройки размера полей
+\usepackage{indentfirst}         % для отступа в первом абзаце секции
+% \usepackage{listings}
+\usepackage{amsfonts}
+
+\usepackage{amsthm}
+\newtheorem{definition}{Определение}
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}
+
+\geometry{a4paper,left=30mm,top=30mm,bottom=30mm,right=30mm}
+\setcounter{secnumdepth}{0}
+
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+	{\small \sc Московский государственный университет \\имени М.~В.~Ломоносова\\
+	Факультет вычислительной математики и кибернетики\\Кафедра математической кибернетики\\}
+	\vfill
+	{\Large \sc Курсовая работа}\\
+    ~\\
+	{\large \bf <<Эвристическая минимизация обобщенных полиномов>>}\\
+	~\\
+    \end{center}
+    \begin{flushright}
+	\vfill {Выполнил:\\
+	студент 318 группы\\
+	Королёв~Ф.~И.\\
+	~\\
+	Научный руководитель:\\
+	к.ф.-м.н. Бухман~А.~В.}
+    \end{flushright}
+    \begin{center}
+	\vfill
+	{\small Москва\\2021}
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Введение}
+
+Рассмотрим данные факты из области дискретной математики~\cite{discrete}.
+
+\begin{definition}
+    Пусть $E_2 = \{0, 1\}$ -- основное множество (исходный алфавит значений переменных), тогда $E^n_2 = \{(\alpha_1, \ldots, \alpha_n) | \forall i \  \alpha_i \in E_2\}$. Тогда всюду определенной булевой функцией назовем отображение $f(x_1, \ldots, x_n): \  E^n_2 \rightarrow E_2$.
+\end{definition}
+\begin{definition}
+    Монотонной конъюнкцией от переменных $x_1, \ldots, x_n$ называется любое выражение вида $x_{i_1} \cdot x_{i_2} \cdot \ldots \cdot x_{i_s}$, где $s \geq 1, \  1 \leq i_j \leq n \  \forall j = \overline{1, s}$, все переменные различны ($i_j \neq i_k$, если $j \neq k$); либо просто 1.
+\end{definition}
+\begin{definition}
+    Полиномом Жегалкина над $x_1, \ldots, x_n$ называется выражение вида
+    $$K_1 \oplus K_2 \oplus \ldots \oplus K_l,$$
+    где $l \geq 1$ и все $K_j$ суть различные монотонные конъюнкции над $x_1, \ldots, x_n$; либо константа 0.
+\end{definition}
+\begin{theorem}{Теорема Жегалкина}
+
+    Любую функцию алгебры логики $f(x_1, \ldots, x_n)$ можно единственным образом выразить полиноном Жегалкина над $x_1, \ldots, x_n$.
+\end{theorem}
+\begin{definition}
+    Обобщенным полиномом над $x_1, \ldots, x_n$ называется выражение вида
+    $$K_1 \oplus K_2 \oplus \ldots \oplus K_l,$$
+    где $l \geq 1$ и все $K_j$ суть различные монотонные конъюнкции над $x_1, \ldots, x_n$ или их отрицаниями; либо константа 0.
+\end{definition}
+
+Аналога теоремы Жегалкина для обобщенных полиномов не существует. Например, функция алгебры логики $(0000\:1101)$ представима как $\overline x_3 \oplus x_1 \overline x_2 \oplus \overline x_2 x_3 \oplus \overline x_1 \overline x_2 x_3$ и как $\overline x_3 \oplus x_1 \overline x_2 \overline x_3$.
+
+Отсюда вытекает интерес в поиске наименьшего с точки зрения количества конъюнктов обобщенного полинома для ускоренного численного вычисления значения относительно полинома Жегалкина той же функции.
+
+\section{Постановка задачи}
+
+Написать программу, входными данными которой служит обобщенный многочлен, выходными -- сокращенный программой обобщенный многочлен.
+
+В качестве предложенного алгоритма выступает координатный спуск: к изначальному полиному прибавляются нулевые полиномы (простейший пример -- $1 \oplus x_1 \oplus \overline x_1 \equiv 0$), в случае сокращения конъюнктов полученный полином может стать короче изначального, после чего пробуется повторить проделанную итерацию.
+
+Проанализировать выходные данные программы: понять, всегда ли получается найти наименьший полином.
+
+\section{Основная часть}
+
+На языке C++ реализована программа, которая считывает размерность булева пространства, затем обобщенный полином из этого пространства. После этого генерируется базис нулевых полиномов для данного пространства и алгоритм пытается прибавлять к текущему полиному элементы из данного базиса. Если в очередной проход по базису не удалось сократить полином, алгоритм считается законченным.
+
+\begin{lemma}
+    Мощность базиса нулевых полиномов в булевом пространстве размерности $n$ равна $4^n - 3^n$.
+\end{lemma}
+\begin{proof}
+    В доказательстве используем дистрибутивность конъюнкции относительно исключающего или.
+    Представим элементарную конъюнкцию из $n$ множителей. На i-той позиции может стоять один из 4-рех вариантов: $\{0, 1, x_i, \overline x_i \}$, где $0 \equiv 1 \oplus x_i \oplus \overline x_i$. Если хоть один литерал конъюнкции равен 0, то вся конъюнкция равна 0. В таком случае из $4^n$ вариантов уберем из рассматрения перестановки из множества $\{1, x_i, \overline x_i \}$ для $\forall i \in \overline{1, n}$, отсюда нулевых многочленов, полученных раскрытием скобок, насчитывается $4^n - 3^n$.
+\end{proof}
+
+Программа тестировалась на собственном наборе тестов.
+Каждый из них будет представлен в виде:
+\begin{itemize}
+    \item вектор значений функции алгебры логики
+    \item входной обобщенный полином
+    \item последовательность найденных программой сокращений
+    \item результат работы программы
+    \item предложенное сокращение
+    \item время работы программы
+\end{itemize}
+
+\textbf{Тест 1}
+
+boolean function: $(1111\:0101)$
+
+input: $x_1 \oplus x_2 \oplus x_3 \oplus \overline x_1 x_2 \oplus \overline x_1 \overline x_3 \oplus \overline x_2 \overline x_3 \oplus x_1 \overline x_2 x_3 \oplus \overline x_1 \overline x_2 \overline x_3$
+
+matches:
+
+$\overline x_2 \overline x_3 \oplus x_1 \overline x_2 \overline x_3 \oplus \overline x_1 \overline x_2 \overline x_3$
+
+$x_2 \oplus x_1 x_2 \oplus \overline x_1 x_2$
+
+$x_1 \oplus x_1 x_2 \oplus x_1 \overline x_2$
+
+$x_1 \overline x_2 \oplus x_1 \overline x_2 x_3 \oplus x_1 \overline x_2 \overline x_3$
+
+result: $x_3 \oplus \overline x_1 \overline x_3$
+
+suggestion: $\overline x_1 \oplus x_1 x_3$
+
+time: generating basis 0 ms, coordinate descent 0 ms
+
+\textbf{Тест 2}
+
+boolean function: $(1010\:1100\;1011\:1101)$
+
+input: $\overline x_2 \overline x_4 \oplus x_1 \overline x_2 x_3 \oplus x_1 x_3 \overline x_4 \oplus \overline x_1 \overline x_3 \overline x_4 \oplus x_2 \overline x_3 x_4 \oplus \overline x_2 \overline x_3 \overline x_4 \oplus x_1 x_2 x_3 x_4 \oplus x_1 x_2 \overline x_3 \overline x_4$
+
+matches:
+
+$\overline x_2 \overline x_4 \oplus \overline x_2 x_3 \overline x_4 \oplus \overline x_2 \overline x_3 \overline x_4$
+
+result: $x_1 \overline x_2 x_3 \oplus x_1 x_3 \overline x_4 \oplus \overline x_1 \overline x_3 \overline x_4 \oplus x_2 \overline x_3 x_4 \oplus \overline x_2 x_3 \overline x_4 \oplus x_1 x_2 x_3 x_4 \oplus x_1 x_2 \overline x_3 \overline x_4$
+
+suggestion: $x_1 x_3 \oplus x_2 \overline x_3 \oplus \overline x_1 \overline x_2 \overline x_4$
+
+time: generating basis 9 ms, coordinate descent 6 ms
+
+\textbf{Тест 3}
+
+boolean function: $(1011\:1101\;1111\:0000)$
+
+input: $\overline x_1 \overline x_3 \oplus x_2 x_3 \oplus \overline x_2 \overline x_4 \oplus x_3 x_4 \oplus x_1 x_2 x_4 \oplus x_2 \overline x_3 \overline x_4 \oplus x_1 x_2 \overline x_3 \overline x_4 \oplus x_1 \overline x_2 \overline x_3 \overline x_4$
+
+matches:
+
+$x_2 \overline x_3 \overline x_4 \oplus x_1 x_2 \overline x_3 \overline x_4 \oplus \overline x_1 x_2 \overline x_3 \overline x_4$
+
+result: $\overline x_1 \overline x_3 \oplus x_2 x_3 \oplus \overline x_2 \overline x_4 \oplus x_3 x_4 \oplus x_1 x_2 x_4 \oplus x_1 \overline x_2 \overline x_3 \overline x_4 \oplus \overline x_1 x_2 \overline x_3 \overline x_4$
+
+suggestion: $x_3 \oplus x_1 x_2 x_4 \oplus \overline x_1 \overline x_3 x_4 \oplus x_2 x_3 x_4$
+
+time: generating basis 2 ms, coordinate descent 2 ms
+
+\textbf{Тест 4}
+
+boolean function: $(1010\:1101\;1010\:0100)$
+
+input: $x_3 \oplus x_4 \oplus x_1 \overline x_2 \oplus \overline x_1 \overline x_4 \oplus x_1 x_2 \overline x_4 \oplus x_1 x_3 \overline x_4 \oplus x_1 \overline x_3 \overline x_4 \oplus x_1 x_2 x_3 x_4 \oplus \overline x_1 \overline x_2 \overline x_3 \overline x_4$
+
+matches:
+
+$x_1 \overline x_4 \oplus x_1 x_3 \overline x_4 \oplus x_1 \overline x_3 \overline x_4$
+
+$\overline x_4 \oplus x_1 \overline x_4 \oplus \overline x_1 \overline x_4$
+
+$1 \oplus x_4 \oplus \overline x_4$
+
+$1 \oplus x_3 \oplus \overline x_3$
+
+result: $\overline x_3 \oplus x_1 \overline x_2 \oplus x_1 x_2 \overline x_4 \oplus x_1 x_2 x_3 x_4 \oplus \overline x_1 \overline x_2 \overline x_3 \overline x_4$
+
+suggestion: $x_1 \oplus \overline x_3 \oplus x_1 x_2 \overline x_3 x_4 \oplus \overline x_1 \overline x_2 \overline x_3 \overline x_4$
+
+time: generating basis 2 ms, coordinate descent 2 ms
+
+\textbf{Тест 5}
+
+boolean function: $(0010\:1000\;1010\:0000\;1000\:1000\;0000\:0000)$
+
+input: $x_1 x_2 x_3 \overline x_4 \oplus x_1 x_2 x_3 \overline x_5 \oplus x_1 x_2 \overline x_3 x_4 \oplus x_1 \overline x_2 x_3 x_5$
+
+matches: NO MATCHES
+
+result: $x_1 x_2 x_3 \overline x_4 \oplus x_1 x_2 x_3 \overline x_5 \oplus x_1 x_2 \overline x_3 x_4 \oplus x_1 \overline x_2 x_3 x_5$
+
+suggestion: $x_1 x_2 x_4 \oplus x_1 x_3 x_5$
+
+time: generating basis 14 ms, coordinate descent 3 ms
+
+\textbf{Тест 6}
+
+boolean function: $(1001\:0110\;0000\:0001\;1000\:0010\;0000\:0001)$
+
+input: $x_4 x_5 \oplus x_1 x_2 x_3 x_4 \oplus x_1 x_2 x_4 x_5 \oplus x_1 \overline x_2 \overline x_3 x_4 \oplus x_1 x_3 x_4 x_5 \oplus \overline x_1 \overline x_2 \overline x_3 \overline x_4 \oplus x_2 x_3 x_4 x_5 \oplus \overline x_2 \overline x_3 x_4 x_5$
+
+matches: NO MATCHES
+
+result: $x_4 x_5 \oplus x_1 x_2 x_3 x_4 \oplus x_1 x_2 x_4 x_5 \oplus x_1 \overline x_2 \overline x_3 x_4 \oplus x_1 x_3 x_4 x_5 \oplus \overline x_1 \overline x_2 \overline x_3 \overline x_4 \oplus x_2 x_3 x_4 x_5 \oplus \overline x_2 \overline x_3 x_4 x_5$
+
+suggestion: $x_1 x_2 x_4 \oplus x_1 \overline x_3 x_4 \oplus \overline x_1 x_2 x_4 x_5 \oplus \overline x_1 \overline x_2 \overline x_3 \overline x_4 \oplus \overline x_1 x_3 x_4 x_5$
+
+time: generating basis 23 ms, coordinate descent 5 ms
+
+\textbf{Тест 7}
+
+boolean function: $(1100\:0000\;0000\:0000\;0100\:1011\;0000\:0000\\0000\:0000\;0000\:0000\;0100\:1011\;0000\:0000)$
+
+input: $x_1 x_2 x_4 \overline x_5 \oplus \overline x_2 \overline x_3 x_4 \overline x_5 \oplus \overline x_1 x_2 x_3 x_4 x_5 \oplus \overline x_1 x_2 x_3 x_4 \overline x_6 \oplus x_2 x_3 x_4 \overline x_5 x_6 \oplus x_1 x_2 x_3 x_4 x_5 x_6 \oplus x_1 x_2 x_3 x_4 \overline x_5 \overline x_6$
+
+matches: NO MATCHES
+
+result: $x_1 x_2 x_4 \overline x_5 \oplus \overline x_2 \overline x_3 x_4 \overline x_5 \oplus \overline x_1 x_2 x_3 x_4 x_5 \oplus \overline x_1 x_2 x_3 x_4 \overline x_6 \oplus x_2 x_3 x_4 \overline x_5 x_6 \oplus x_1 x_2 x_3 x_4 x_5 x_6 \oplus x_1 x_2 x_3 x_4 \overline x_5 \overline x_6$
+
+suggestion: $x_1 x_2 x_4 \overline x_5 \oplus x_2 x_3 x_4 x_6 \oplus \overline x_2 \overline x_3 x_4 \overline x_5 \oplus x_2 x_3 x_4 \overline x_5 \overline x_6$
+
+time: generating basis 94 ms, coordinate descent 30 ms
+
+\textbf{Тест 8}
+
+boolean function: $(0000\:1000\;0000\:0100\;1111\:1000\;0011\:0100\\0011\:0111\;0001\:1011\;1100\:1011\;0000\:0111)$
+
+input: $\overline x_1 \overline x_6 \oplus x_2 x_4 \oplus x_3 x_5 \oplus x_3 x_6 \oplus \overline x_5 \overline x_6 \oplus x_1 \overline x_3 \overline x_6 \oplus x_1 \overline x_5 \overline x_6 \oplus \overline x_1 x_2 \overline x_3 \oplus x_2 x_3 x_4 \oplus x_2 x_3 \overline x_4 \oplus x_2 x_3 x_5 \oplus x_2 x_3 \overline x_6 \oplus x_3 x_5 \overline x_6 \oplus x_1 x_3 x_5 \overline x_6 \oplus \overline x_1 \overline x_3 \overline x_5 \overline x_6 \oplus x_2 x_3 x_4 x_5 \oplus x_2 \overline x_3 \overline x_5 \overline x_6 \oplus x_1 \overline x_2 x_3 \overline x_4 x_5 \overline x_6$
+
+matches:
+
+$\overline x_5 \overline x_6 \oplus x_1 \overline x_5 \overline x_6 \oplus \overline x_1 \overline x_5 \overline x_6$
+
+$\overline x_1 \overline x_6 \oplus \overline x_1 x_5 \overline x_6 \oplus \overline x_1 \overline x_5 \overline x_6$
+
+$x_3 x_5 \oplus x_2 x_3 x_5 \oplus \overline x_2 x_3 x_5$
+
+$x_2 x_4 \oplus x_2 x_3 x_4 \oplus x_2 \overline x_3 x_4$
+
+$x_3 x_5 \overline x_6 \oplus x_1 x_3 x_5 \overline x_6 \oplus \overline x_1 x_3 x_5 \overline x_6$
+
+$\overline x_1 x_5 \overline x_6 \oplus \overline x_1 x_3 x_5 \overline x_6 \oplus \overline x_1 \overline x_3 x_5 \overline x_6$
+
+$\overline x_1 \overline x_3 \overline x_6 \oplus \overline x_1 \overline x_3 x_5 \overline x_6 \oplus \overline x_1 \overline x_3 \overline x_5 \overline x_6$
+
+$\overline x_3 \overline x_6 \oplus x_1 \overline x_3 \overline x_6 \oplus \overline x_1 \overline x_3 \overline x_6$
+
+result: $x_3 x_6 \oplus \overline x_3 \overline x_6 \oplus \overline x_1 x_2 \overline x_3 \oplus x_2 x_3 \overline x_4 \oplus x_2 x_3 \overline x_6 \oplus x_2 \overline x_3 x_4 \oplus \overline x_2 x_3 x_5 \oplus x_2 x_3 x_4 x_5 \oplus x_2 \overline x_3 \overline x_5 \overline x_6 \oplus x_1 \overline x_2 x_3 \overline x_4 x_5 \overline x_6$
+
+suggestion: $\overline x_2 \overline x_6 \oplus \overline x_1 x_2 \overline x_3 \oplus x_2 \overline x_3 x_4 \oplus \overline x_2 x_3 \overline x_5 \oplus x_2 x_3 x_4 \overline x_5 \oplus x_2 \overline x_3 x_5 \overline x_6 \oplus x_1 \overline x_2 x_3 \overline x_4 x_5 \overline x_6$
+
+time: generating basis 92 ms, coordinate descent 177 ms
+
+Как видно из тестов, для 5 из них нашлись какие-то сокращения, и всего на 1 из них программа ответила минимальным обобщенным полиномом.
+
+Также, в случае увеличения размерности булева пространства, начинает значительно расти требования по памяти: для 11-мерного пространства базис генерируется за 104.7 секунды и требует для своего хранения порядка 4.8 GB оперативной памяти.
+
+\section{Полученные результаты}
+
+Была написана программа для эвристического сжатия обобщенного полинома путем прибавления нулевых полиномов. Программа может сократить полином, но найти минимальный не может (так как удавалось придумать меньший полином в большинстве случаев), работает достаточно быстро, требовательна к памяти.
+
+\begin{raggedright}
+\addcontentsline{toc}{section}{Литература}
+\begin{thebibliography}{99}
+\bibitem{discrete} Алексеев~В.\,Б., Поспелов~А.\,Д. Дискретная математика.\\Москва: Наука, 2002.
+\end{thebibliography}
+\end{raggedright}
+
+\end{document}

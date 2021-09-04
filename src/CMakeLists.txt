@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.10)
 
 project(course-work)
 
-set(CMAKE_CXX_STANDART 20)
+set(CMAKE_CXX_STANDARD 17)
 
-# target_compile_definitions()
+# target_compile_definitions
 add_definitions(-O2 -Wall)
 
 if (UNIX)
@@ -19,7 +19,7 @@ elseif (WIN32)
 endif()
 
 add_subdirectory(bin)
-add_subdirectory(implementation)
+add_subdirectory(impl)
 
-target_include_directories(main PUBLIC ${CMAKE_SOURCE_DIR})
-target_include_directories(entities_lib PUBLIC ${CMAKE_SOURCE_DIR})
+target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(entities_lib PRIVATE ${CMAKE_SOURCE_DIR})

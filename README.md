@@ -1,17 +1,20 @@
 # course-work
 
-#### using
+#### dependencies
+
+**debian**
 
 ```bash
-./main < %PATH_TO_INPUT_FILE% > %PATH_TO_OUTPUT_FILE%
+sudo apt install texlive-latex-extra texlive-lang-cyrillic texlive-extra-utils
 ```
 
-#### input file content
+#### example of usage
 
-The 1st argument of the input file is an integer that is perceived as a dimension, the 2nd argument is the optimized polynomial, then the basis (sequence) of zero polynomials.
-
-```
+```bash
+Input dimension you want work with:
 3
-!x1+x2+x3x2
-
+Input polynomial you want to shrink:
+x1+x2+x3+!x1x2+!x1!x3+!x2!x3+x1!x2x3+!x1!x2!x3
+Your polynomial has been shrinken to this form:
+x3+!x1!x3
 ```
