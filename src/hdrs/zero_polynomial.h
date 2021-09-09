@@ -5,8 +5,8 @@
 enum class EMode {
     Zero,
     One,
-    Positive,
-    Negative
+    Positive/*,
+    Negative*/
 };
 
 int32_t binpow(int32_t base, int32_t exp);
